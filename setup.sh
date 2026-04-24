@@ -194,7 +194,8 @@ install_powerlevel10k() {
   # Update ZSH_THEME in ~/.zshrc if the file exists.
   if [ -f "$HOME/.zshrc" ]; then
     if grep -q '^ZSH_THEME=' "$HOME/.zshrc"; then
-      sed -i.bak 's|^ZSH_THEME=.*|ZSH_THEME="powerlevel10k/powerlevel10k"|' "$HOME/.zshrc"
+      sed -i.bak 's|^ZSH_THEME=.*|ZSH_THEME="powerlevel10k/powerlevel10k"|' "$HOME/.zshrc" \
+        && rm -f "$HOME/.zshrc.bak"
       echo "✔ ZSH_THEME set to powerlevel10k/powerlevel10k in ~/.zshrc"
     else
       echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> "$HOME/.zshrc"
@@ -229,7 +230,15 @@ install_zsh_autosuggestions() {
   # Enable the plugin in ~/.zshrc if it is not already listed.
   if [ -f "$HOME/.zshrc" ] && ! grep -q 'zsh-autosuggestions' "$HOME/.zshrc"; then
     # Insert 'zsh-autosuggestions' into the plugins=(...) list.
-    sed -i.bak 's/^plugins=(\(.*\))/plugins=(\1 zsh-autosuggestions)/' "$HOME/.zshrc"
+    # This handles both single-line and the common case where each plugin is on its own line.
+    if grep -q '^plugins=(' "$HOME/.zshrc"; then
+      # Single-line: plugins=(git ...) → add the new plugin before the closing paren.
+      sed -i.bak '/^plugins=(/ s/)$/ zsh-autosuggestions)/' "$HOME/.zshrc" \
+        && rm -f "$HOME/.zshrc.bak"
+    else
+      # Fallback: append a standalone plugins line (e.g. when Oh My Zsh isn't installed).
+      echo 'plugins=(zsh-autosuggestions)' >> "$HOME/.zshrc"
+    fi
     echo "✔ zsh-autosuggestions added to plugins in ~/.zshrc"
   fi
 }
