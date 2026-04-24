@@ -244,6 +244,34 @@ install_zsh_autosuggestions() {
 }
 
 # ---------------------------------------------------------------------------
+# Step 6 — Add common git aliases
+# ---------------------------------------------------------------------------
+
+add_git_aliases() {
+  print_step "Step 6 · Add git aliases to ~/.zshrc"
+
+  local zshrc="$HOME/.zshrc"
+  local aliases_marker="# git aliases (added by setup.sh)"
+
+  if [ -f "$zshrc" ] && grep -q "$aliases_marker" "$zshrc"; then
+    echo "✔ Git aliases are already present in ~/.zshrc"
+    return
+  fi
+
+  if ask "Add git aliases (gitc, gitp) to ~/.zshrc?"; then
+    {
+      echo ""
+      echo "$aliases_marker"
+      echo 'alias gitc="git checkout"'
+      echo 'alias gitp="git pull"'
+    } >> "$zshrc"
+    echo "✔ Git aliases added to ~/.zshrc"
+  else
+    echo "Skipped git aliases."
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # ★ ADD NEW STEPS HERE
 #
 # Example skeleton:
@@ -274,6 +302,7 @@ main() {
   echo "  2. Oh My Zsh"
   echo "  3. Powerlevel10k theme"
   echo "  4. zsh-autosuggestions plugin"
+  echo "  5. git aliases (gitc, gitp)"
   echo ""
   if $AUTO_YES; then
     echo "Running in non-interactive mode (--yes flag detected)."
@@ -284,6 +313,7 @@ main() {
   install_oh_my_zsh
   install_powerlevel10k
   install_zsh_autosuggestions
+  add_git_aliases
   # ↑ Add calls to new step functions here, in order.
 
   echo ""
